@@ -2,7 +2,7 @@ import { Document, Model } from "mongoose";
 
 export interface IUser extends Document {
   password: string;
-  role: "seller" | "buyer";
+  role: "seller" | "buyer" | "admin";
   name: {
     firstName: string;
     lastName: string;

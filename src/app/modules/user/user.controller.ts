@@ -5,28 +5,6 @@ import { NextFunction, Request, Response } from "express";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-
-
-    // if (!password || !role || !name || !phoneNumber || !address) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "User data is missing required fields",
-    //     data: null,
-    //   });
-    // }
-
-    // const user: IUser = {
-    //   password,
-    //   role,
-    //   name,
-    //   phoneNumber,
-    //   address,
-    //   budget,
-    //   income,
-    //   createdAt,
-    //   updatedAt,
-    // };
-
     const result = await userService.createUser(req.body);
 
     res.status(200).json({
