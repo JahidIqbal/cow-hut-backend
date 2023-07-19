@@ -1,12 +1,17 @@
+import config from "../../../config";
 import Admin from "./admin.interface";
 import AdminModel from "./admin.model";
+import bcrypt from 'bcrypt';
 
 const createAdmin = async (admin: Admin): Promise<Admin | null> => {
-  const createdAdmin = await AdminModel.create(admin);
+  console.log(admin); // Add this line to log the admin object
 
-  if (!createdAdmin) {
-    throw new Error("Failed to create admin!");
+  if (!admin.password) {
+    admin.password=config.default_admin_pass as string;
   }
+
+  const createdAdmin = await AdminModel.create(admin);
+  const hashedPassword = await bcrypt.hash(admin.password, Number(config.bcrypt_salt_rounds));
 
   const adminResponse = {
     role: createdAdmin.role,
@@ -15,6 +20,11 @@ const createAdmin = async (admin: Admin): Promise<Admin | null> => {
     address: createdAdmin.address,
   };
 
+  // Save the hashed password to the admin model or update it accordingly
+  createdAdmin.password = hashedPassword;
+  await createdAdmin.save();
+
+  console.log(adminResponse);
   return adminResponse;
 };
 
