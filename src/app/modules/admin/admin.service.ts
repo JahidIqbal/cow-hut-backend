@@ -29,10 +29,23 @@ const createAdmin = async (admin: Admin): Promise<Admin | null> => {
   return adminResponse;
 };
 
-const loginAdmin = async (phoneNumber: string, password: string): Promise<{ accessToken: string }> => {
+
+const generateTokens = (adminId: string, role: string) => {
+  const accessToken = jwt.sign({ _id: adminId, role }, config.jwt.secret as string, {
+    expiresIn: config.jwt.expires_in,
+  });
+
+  const refreshToken = jwt.sign({ _id: adminId, role }, config.jwt.refresh_secret as string, {
+    expiresIn: config.jwt.refresh_expires_in,
+  });
+
+  return { accessToken, refreshToken };
+};
+
+
+const loginAdmin = async (phoneNumber: string, password: string) => {
   const admin = await AdminModel.findOne({ phoneNumber });
-  console.log('Received login request with phoneNumber:', phoneNumber);
-  console.log('Received login request with password:', password);
+
   if (!admin) {
     throw new Error('Admin not found');
   }
@@ -48,15 +61,10 @@ const loginAdmin = async (phoneNumber: string, password: string): Promise<{ acce
     throw new Error('Invalid credentials');
   }
 
-  const payload = {
-    _id: admin._id.toString(),
-    role: admin.role,
-  };
+  // Generate access token and refresh token
+  const { accessToken, refreshToken } = generateTokens(admin._id.toString(), admin.role);
 
-  const secretKey = config.jwt.secret as string; // No need to cast to string here
-  const accessToken = sign(payload, secretKey, { expiresIn: '1h' });
-
-  return { accessToken };
+  return { accessToken, refreshToken };
 };
 
 export default {

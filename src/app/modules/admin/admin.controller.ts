@@ -38,10 +38,19 @@ const loginAdmin = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    const { accessToken } = await AdminService.loginAdmin(phoneNumber, password);
+    // Attempt to login the admin
+    const { accessToken, refreshToken } = await AdminService.loginAdmin(phoneNumber, password);
+
+    // Set the refresh token in a browser cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Set 'secure' to true in production
+      maxAge: 365 * 24 * 60 * 60 * 1000, // Set the cookie to expire in 365 days
+    });
+
+    // Send the access token in the response
     res.status(200).json({
       success: true,
-      statusCode: 200,
       message: "User logged in successfully",
       data: {
         accessToken,
@@ -51,6 +60,7 @@ const loginAdmin = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
+
 
 export const AdminController = {
   createAdmin,
