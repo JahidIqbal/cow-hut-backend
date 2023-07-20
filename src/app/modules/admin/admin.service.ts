@@ -1,3 +1,4 @@
+import jwt,{ JsonWebTokenError, sign } from "jsonwebtoken";
 import config from "../../../config";
 import Admin from "./admin.interface";
 import AdminModel from "./admin.model";
@@ -28,6 +29,37 @@ const createAdmin = async (admin: Admin): Promise<Admin | null> => {
   return adminResponse;
 };
 
+const loginAdmin = async (phoneNumber: string, password: string): Promise<{ accessToken: string }> => {
+  const admin = await AdminModel.findOne({ phoneNumber });
+  console.log('Received login request with phoneNumber:', phoneNumber);
+  console.log('Received login request with password:', password);
+  if (!admin) {
+    throw new Error('Admin not found');
+  }
+
+  // Ensure that the admin.password is not undefined before proceeding
+  if (typeof admin.password === 'undefined') {
+    throw new Error('Admin password is missing');
+  }
+
+  const passwordMatch = await bcrypt.compare(password, admin.password);
+
+  if (!passwordMatch) {
+    throw new Error('Invalid credentials');
+  }
+
+  const payload = {
+    _id: admin._id.toString(),
+    role: admin.role,
+  };
+
+  const secretKey = config.jwt.secret as string; // No need to cast to string here
+  const accessToken = sign(payload, secretKey, { expiresIn: '1h' });
+
+  return { accessToken };
+};
+
 export default {
   createAdmin,
+  loginAdmin,
 };

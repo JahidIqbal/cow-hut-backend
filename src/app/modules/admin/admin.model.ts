@@ -10,7 +10,6 @@ const adminSchema = new mongoose.Schema<Admin & Document>({
   password: {
     type: String,
     required: true,
-    select:0
   },
   name: {
     type: {
