@@ -22,7 +22,11 @@ const moduleRoutes = [
   {
     path: '/admins',
     route: AdminRoutes,
-  }
+  },
+  // {
+  //   path: '/auth',
+  //   route: AuthRoute,
+  // }
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));

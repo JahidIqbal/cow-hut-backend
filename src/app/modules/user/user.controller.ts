@@ -1,6 +1,9 @@
+import config from "../../../config";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
 import userService from "./user.service";
+import jwt,{ JsonWebTokenError, sign,Secret } from "jsonwebtoken";
+
 import { NextFunction, Request, Response } from "express";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -53,6 +56,100 @@ const getSingleUser = async (
   } catch (err) {
     next(err);
   }
+};
+
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { phoneNumber, password } = req.body;
+
+    // Ensure both phoneNumber and password are provided
+    if (!phoneNumber || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Both phoneNumber and password are required",
+        data: null,
+      });
+    }
+
+    // Authenticate user and generate access token
+    const user = await userService.authenticateUser(phoneNumber, password);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+        data: null,
+      });
+    }
+
+    // Generate the access token
+    const accessToken = generateAccessToken(user);
+
+    res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    // Ensure the refreshToken is provided in the request cookie
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is missing",
+        data: null,
+      });
+    }
+
+    try {
+      // Verify the refresh token
+      const decodedToken = jwt.verify(refreshToken, config.jwt.refresh_secret as string) as IUser;
+
+      // Generate a new access token using the decoded user information
+      const accessToken = generateAccessToken(decodedToken);
+
+      res.status(200).json({
+        success: true,
+        message: "Access token refreshed successfully",
+        data: {
+          accessToken,
+        },
+      });
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+        data: null,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+const generateAccessToken = (user: IUser) => {
+  const payload = {
+    _id: user._id.toString(),
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+  };
+
+  const secretKey = config.jwt.secret as Secret;
+  const expiresIn = config.jwt.expires_in as string;
+
+  // Generate and return the access token
+  const accessToken = jwt.sign(payload, secretKey, { expiresIn });
+
+  return accessToken;
 };
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -109,4 +206,6 @@ export const UserController = {
   getSingleUser,
   updateUser,
   deleteUser,
+  loginUser,
+  refreshToken
 };

@@ -1,6 +1,6 @@
-// user.service.ts
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
+import bcrypt from "bcrypt";
 
 const createUser = async (user: IUser): Promise<IUser | null> => {
   const createdUser = await User.create(user);
@@ -26,10 +26,26 @@ const updateUser = async (userId: string, updateData: Partial<IUser>): Promise<I
   return updatedUser;
 };
 
-
 const deleteUser = async (userId: string): Promise<IUser | null> => {
   const deletedUser = await User.findByIdAndDelete(userId);
   return deletedUser;
+};
+
+const authenticateUser = async (phoneNumber: string, password: string): Promise<IUser | null> => {
+  const user = await User.findOne({ phoneNumber });
+
+  if (!user) {
+    return null;
+  }
+
+  // Compare the provided password with the hashed password in the database
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordMatch) {
+    return null;
+  }
+
+  return user;
 };
 
 export default {
@@ -37,5 +53,6 @@ export default {
   getAllUser,
   getSingleUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  authenticateUser,
 };

@@ -1,6 +1,8 @@
-import { Document, Model } from "mongoose";
+import { Document, Model, Types } from "mongoose";
+import Admin from "../admin/admin.interface";
 
 export interface IUser extends Document {
+  email: any;
   password: string;
   role: "seller" | "buyer" | "admin";
   name: {
@@ -13,6 +15,10 @@ export interface IUser extends Document {
   income: number;
   createdAt: Date;
   updatedAt: Date;
+
+  id: string;
+  needsPasswordChange: true | false;
+  admin?: Types.ObjectId | Admin;
 }
 
 export type UserModel = Model<IUser>;
