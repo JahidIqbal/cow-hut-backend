@@ -2,7 +2,7 @@ import config from "../../../config";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
 import userService from "./user.service";
-import jwt,{ JsonWebTokenError, sign,Secret } from "jsonwebtoken";
+import jwt, { JsonWebTokenError, sign, Secret } from "jsonwebtoken";
 
 import { NextFunction, Request, Response } from "express";
 
@@ -40,7 +40,7 @@ const getSingleUser = async (
 ) => {
   try {
     const { id } = req.params;
-    console.log(req.params);
+    // console.log(req.params);
     const user = await userService.getSingleUser(id);
     if (!user) {
       return res.status(404).json({
@@ -71,7 +71,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // Authenticate user and generate access token
+    // Authenticate user and generate access token and refresh token
     const user = await userService.authenticateUser(phoneNumber, password);
     if (!user) {
       return res.status(401).json({
@@ -81,9 +81,20 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // Generate the access token
+    // Generate the access token and refresh token
     const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user); // New function to generate refresh token
 
+    // const refreshTokenExpiresIn = Number(config.jwt.refresh_expires_in);
+
+    // Send the refresh token in the HTTP response's cookie header
+    res.cookie("refreshToken", refreshToken, {
+      // httpOnly: true,
+      // maxAge: refreshTokenExpiresIn,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Set 'secure' to true in production
+      maxAge: 365 * 24 * 60 * 60 * 1000, // Set the cookie to expire in 365 days
+    });
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
@@ -95,8 +106,13 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
+    // Get the refreshToken from the request cookie
     const refreshToken = req.cookies.refreshToken;
 
     // Ensure the refreshToken is provided in the request cookie
@@ -109,12 +125,16 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     try {
-      // Verify the refresh token
-      const decodedToken = jwt.verify(refreshToken, config.jwt.refresh_secret as string) as IUser;
+      // Verify the refresh token using the refresh_secret
+      const decodedToken = jwt.verify(
+        refreshToken,
+        config.jwt.refresh_secret as Secret
+      ) as IUser;
 
       // Generate a new access token using the decoded user information
       const accessToken = generateAccessToken(decodedToken);
 
+      // Send the new access token in the response
       res.status(200).json({
         success: true,
         message: "Access token refreshed successfully",
@@ -134,7 +154,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-
+// console.log(refreshToken,'refreshtoken');
 
 const generateAccessToken = (user: IUser) => {
   const payload = {
@@ -148,8 +168,24 @@ const generateAccessToken = (user: IUser) => {
 
   // Generate and return the access token
   const accessToken = jwt.sign(payload, secretKey, { expiresIn });
-
+  // const refreshToken = jwt.sign(payload, refresh_secret, { expiresIn });
   return accessToken;
+};
+
+const generateRefreshToken = (user: IUser) => {
+  const payload = {
+    _id: user._id.toString(),
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+  };
+
+  const secretKey = config.jwt.refresh_secret as Secret;
+  const expiresIn = config.jwt.refresh_expires_in as string;
+
+  // Generate and return the refresh token
+  const refreshToken = jwt.sign(payload, secretKey, { expiresIn });
+
+  return refreshToken;
 };
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -207,5 +243,5 @@ export const UserController = {
   updateUser,
   deleteUser,
   loginUser,
-  refreshToken
+  refreshToken,
 };
