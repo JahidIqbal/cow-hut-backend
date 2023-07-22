@@ -9,7 +9,6 @@ router.post(
   "/create-admin",
   AdminController.createAdmin
 );
-// router.post("/login",  auth([ENUM_USER_ROLE.ADMIN]),AdminController.loginAdmin);
 router.post("/login",AdminController.loginAdmin);
 
 export const AdminRoutes = router;
