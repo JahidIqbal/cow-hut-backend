@@ -21,6 +21,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getAllUser = async (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.headers.authorization);
+  console.log(req.user);
   try {
     const users = await userService.getAllUser();
     res.status(200).json({
