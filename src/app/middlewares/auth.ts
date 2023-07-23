@@ -24,7 +24,7 @@ const auth =
       }
 
       req.user = verifiedUser; // Store user details in the request for further use (e.g., user role and id)
-
+     console.log(requiredRoles);
       // Check if requiredRoles are specified and user role is allowed
       if (requiredRoles.length && !requiredRoles.includes(verifiedUser.role)) {
         throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden. You are not authorized to access this route.');

@@ -1,9 +1,9 @@
 import config from "../../../config";
-import { IUser } from "./user.interface";
+import { IUser,UserModel } from "./user.interface";
 import { User } from "./user.model";
 import userService from "./user.service";
 import jwt, { JsonWebTokenError, sign, Secret } from "jsonwebtoken";
-
+import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from "express";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -238,6 +238,88 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+
+const getUserProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user as IUser;
+
+    // Fetch the user profile based on the user's _id
+    const userProfile = await User.findById(user._id);
+   console.log(userProfile);
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "User profile not found",
+        data: null,
+      });
+    }
+
+    // Return the user profile information
+    res.status(200).json({
+      success: true,
+      message: "User's information retrieved successfully",
+      data: {
+        name: {
+          firstName: userProfile.name.firstName,
+          lastName: userProfile.name.lastName,
+        },
+        phoneNumber: userProfile.phoneNumber,
+        address: userProfile.address,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user as IUser;
+    const { firstName, lastName, phoneNumber, address, password } = req.body;
+
+    // Fetch the user profile based on the user's _id
+    const userProfile = await User.findById(user._id);
+
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "User profile not found",
+        data: null,
+      });
+    }
+
+    // Update the user profile information
+    userProfile.name.firstName = firstName;
+    userProfile.name.lastName = lastName;
+    userProfile.phoneNumber = phoneNumber;
+    userProfile.address = address;
+
+    // If the user provides a password, hash it and update the hashed password
+    if (password) {
+      userProfile.password = await bcrypt.hash(password, 10);
+    }
+
+    // Save the updated user profile
+    const updatedUserProfile = await userProfile.save();
+
+    // Return the updated user profile information
+    res.status(200).json({
+      success: true,
+      message: "User's information updated successfully",
+      data: {
+        name: {
+          firstName: updatedUserProfile.name.firstName,
+          lastName: updatedUserProfile.name.lastName,
+        },
+        phoneNumber: updatedUserProfile.phoneNumber,
+        address: updatedUserProfile.address,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export const UserController = {
   createUser,
   getAllUser,
@@ -246,4 +328,6 @@ export const UserController = {
   deleteUser,
   loginUser,
   refreshToken,
+  getUserProfile,
+  updateUserProfile
 };

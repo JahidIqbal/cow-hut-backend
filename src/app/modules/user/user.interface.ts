@@ -21,5 +21,5 @@ export interface IUser extends Document {
   admin?: Types.ObjectId | Admin;
 }
 
+// export type UserModel = Model<IUser>;
 export type UserModel = Model<IUser>;
-
