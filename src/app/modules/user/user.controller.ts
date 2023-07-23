@@ -278,10 +278,26 @@ const updateUserProfile = async (req: Request, res: Response, next: NextFunction
     const user = req.user as IUser;
     const { firstName, lastName, phoneNumber, address, password } = req.body;
 
-    // Fetch the user profile based on the user's _id
-    const userProfile = await User.findById(user._id);
+    // Update the user profile information
+    const update: Partial<IUser> = {
+      name: {
+        firstName,
+        lastName,
+      },
+      phoneNumber,
+      address,
+    };
 
-    if (!userProfile) {
+    // If the user provides a password, hash it and update the hashed password
+    if (password) {
+      update.password = await bcrypt.hash(password, 10);
+    }
+
+    // Find and update the user profile based on the user's _id
+    const updateResult = await User.updateOne({ _id: user._id }, update);
+
+    if (updateResult.matchedCount === 0) {
+      // If the number of matched documents is 0, the user profile was not found
       return res.status(404).json({
         success: false,
         message: "User profile not found",
@@ -289,23 +305,22 @@ const updateUserProfile = async (req: Request, res: Response, next: NextFunction
       });
     }
 
-    // Update the user profile information
-    userProfile.name.firstName = firstName;
-    userProfile.name.lastName = lastName;
-    userProfile.phoneNumber = phoneNumber;
-    userProfile.address = address;
+    // Fetch the updated user profile
+    const updatedUserProfile = await User.findById(user._id);
 
-    // If the user provides a password, hash it and update the hashed password
-    if (password) {
-      userProfile.password = await bcrypt.hash(password, 10);
+    if (!updatedUserProfile) {
+      // If the updatedUserProfile is null, the user profile was not found
+      return res.status(404).json({
+        success: false,
+        message: "User profile not found",
+        data: null,
+      });
     }
-
-    // Save the updated user profile
-    const updatedUserProfile = await userProfile.save();
 
     // Return the updated user profile information
     res.status(200).json({
       success: true,
+      statusCode: 200,
       message: "User's information updated successfully",
       data: {
         name: {
@@ -320,6 +335,10 @@ const updateUserProfile = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
+
+
+
 export const UserController = {
   createUser,
   getAllUser,
