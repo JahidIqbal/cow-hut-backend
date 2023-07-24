@@ -294,19 +294,7 @@ const updateUserProfile = async (req: Request, res: Response, next: NextFunction
     }
 
     // Find and update the user profile based on the user's _id
-    const updateResult = await User.updateOne({ _id: user._id }, update);
-
-    if (updateResult.matchedCount === 0) {
-      // If the number of matched documents is 0, the user profile was not found
-      return res.status(404).json({
-        success: false,
-        message: "User profile not found",
-        data: null,
-      });
-    }
-
-    // Fetch the updated user profile
-    const updatedUserProfile = await User.findById(user._id);
+    const updatedUserProfile = await User.findOneAndUpdate({ _id: user._id }, update, { new: true });
 
     if (!updatedUserProfile) {
       // If the updatedUserProfile is null, the user profile was not found
@@ -335,6 +323,7 @@ const updateUserProfile = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
 
 
 
