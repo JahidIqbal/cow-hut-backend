@@ -4,7 +4,9 @@
 # live link
 https://cow-hut-backend-project.vercel.app/
 
-# Auth (User)
+# API Endpoint 
+
+## Auth (User)
 <li>Route: https://cow-hut-backend-project.vercel.app/api/v1/auth/login (POST) </li>
 <li>Route: https://cow-hut-backend-project.vercel.app/api/v1/auth/signup (POST)</li>
 <li>Route: https://cow-hut-backend-project.vercel.app/api/v1/auth/refresh-token (POST)</li>
