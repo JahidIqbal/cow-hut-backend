@@ -1,5 +1,5 @@
 # cow-hut-backend-project
-<p>A Node.js Backend Application with JWT Authentication, Role-Based Access Control, and APIs for Managing Users, Cows, and Orders. You can test the API using Postman.</p>
+<p>A Node.js Backend Application with JWT Authentication, Role-Based Access Control, and APIs for Managing Users, Cows, and Orders.</p>
 
 # live link
 https://cow-hut-backend-project.vercel.app/
@@ -50,7 +50,7 @@ https://cow-hut-backend-project.vercel.app/
 <li>Route: https://cow-hut-backend-project.vercel.app/api/v1/orders/6177a5b87d32123f08d2f5d4 (GET)</li>
 
 
-# Request Body and Responses and some important Instructions
+# Request Body and Responses and some important Instructions(Test in Postman)
 
 #### Admin Routes :
 
