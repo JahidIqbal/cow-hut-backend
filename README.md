@@ -1,5 +1,5 @@
 # cow-hut-backend-project
-<p>This is a fully backend project built with Node.js. You can test the API using Postman.</p>
+<p>A Node.js Backend Application with JWT Authentication, Role-Based Access Control, and APIs for Managing Users, Cows, and Orders. You can test the API using Postman.</p>
 
 # live link
 https://cow-hut-backend-project.vercel.app/
