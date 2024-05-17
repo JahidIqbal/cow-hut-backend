@@ -1,7 +1,7 @@
 # cow-hut-backend-project
 <p>A Node.js Backend Application with JWT Authentication, Role-Based Access Control, and APIs for Managing Users, Cows, and Orders.</p>
 
-# live link
+# Live link
 https://cow-hut-backend-project.vercel.app/
 
 # Features
