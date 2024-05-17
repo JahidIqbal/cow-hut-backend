@@ -1,5 +1,5 @@
-This is fully backend project.To test this api with the help of postman.
-# auth-backend
+# cow-hut-backend-project
+<p>This is a fully backend project built with Node.js. You can test the API using Postman.</p>
 # live link
 https://cow-hut-backend-project.vercel.app/
 
