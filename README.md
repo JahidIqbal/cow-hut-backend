@@ -4,6 +4,13 @@
 # live link
 https://cow-hut-backend-project.vercel.app/
 
+# Features
+
+- Admin routes for creating admins and login functionality.
+- JWT authentication with Bcrypt for secure user login and token refresh.
+- Role-based access control middleware for route protection.
+- Routes for managing users, cows, and orders with appropriate permissions.
+
 # API Endpoint 
 
 ## Auth (User)
